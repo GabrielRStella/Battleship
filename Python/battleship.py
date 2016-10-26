@@ -1,5 +1,6 @@
 #TODO:
 #fix printing for larger boards
+#implement a % counter (how many times you hit / missed)
 
 import random
 
@@ -72,7 +73,7 @@ class Board:
             return False
         else: #miss
             self.board_view[x][y] = VIEW_MISS
-            return True
+            return False
 
     #"Board[WxH]"
     def __str__(self):
@@ -87,7 +88,7 @@ def printView(board):
     #print header (column labels)
     s = " "
     for x in range(board.width):
-        s = s + chr(x + 65)
+        s = s + getColumnLetter(x)
     print s
     #print
     for y in range(board.height):
@@ -95,6 +96,22 @@ def printView(board):
         for x in range(board.width):
             s = s + getViewCharacter(board, x, y)
         print s
+
+def getColumnLetter(index):
+    return chr(index + 65)
+
+def getColumnIndex(letter):
+    return ord(letter.upper()) - 65
+##    if isinstance(letter, str):
+##        return ord(letter.upper()) - 65
+##    else:
+##        return int(letter) - 65
+
+def getRowLetter(index):
+    return str(letter)
+
+def getRowIndex(letter):
+    return int(letter)
 
 #the characters used to represent the states of the view array
 def getViewCharacter(board, x, y):
@@ -147,7 +164,33 @@ if __name__ == "__main__":
             print "Failed to generate " + str(c) + " ships. Sorry :("
             break
     #start the game
+    print str(board.getNumShips()) + " hits left!"
+    print "Note: when launching missiles, specify column then row. Ex: 'A 4' or 'b7'"
+    moves = 0
     while board.getNumShips() > 0:
+        print
         printView(board)
-        line = raw_input("Launch a missile! Coordinates: ")
-        #parse...
+        while True:
+            line = raw_input("Launch a missile! Coordinates: ")
+            print
+            line2 = line.split(" ")
+            if len(line2) > 1:
+                line = line2
+            try:
+                column = getColumnIndex(line[0])
+                row = getRowIndex(line[1])
+                if board.missile(column, row):
+                    print "It's a hit!"
+                else:
+                    print "You missed!"
+                moves += 1
+                if board.getNumShips() > 0:
+                    print str(board.getNumShips()) + " hits left!"
+                break
+            except Exception:
+                print "Invalid coordinates specified"
+        if board.getNumShips() <= 0:
+            #end game
+            print
+            print "You win!"
+            print "It took you " + str(moves) + " moves."
