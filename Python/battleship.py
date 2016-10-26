@@ -1,3 +1,6 @@
+#TODO:
+#fix printing for larger boards
+
 import random
 
 DEFAULT_SIZE = 10
@@ -33,7 +36,7 @@ class Board:
         return self.board_ships[x][y] if self.checkBounds(x, y) else SHIP_NONE
 
     def getNumShips(self):
-        return length(self.ships)
+        return len(self.ships)
 
     def addShip(self, x, y):
         if self.checkBounds(x, y):
@@ -71,37 +74,37 @@ class Board:
             self.board_view[x][y] = VIEW_MISS
             return True
 
-    def printView(self):
-        #print column and row labels
-        #print view using characters from getViewCharacter(x, y)
-
-        #print header (column labels)
-        s = "  "
-        for x in range(self.width):
-            s = s + chr(x + 65)
-        print s
-        print
-        for y in range(self.height):
-            s = str(y) + " " #row labels (TODO: constant width using str.zfill)
-            for x in range(self.width):
-                s = s + self.getViewCharacter(x, y)
-            print s
-
-    #the characters used to represent the states of the view array
-    def getViewCharacter(self, x, y):
-        v = self.getView(x, y)
-        if v == VIEW_HIT:
-            return "x"
-        elif v == VIEW_MISS:
-            return "o"
-        else:
-            return "~"
-
     #"Board[WxH]"
     def __str__(self):
         return "Board [" + str(self.width) + "x" + str(self.height) + "]"
 
 
+
+def printView(board):
+    #print column and row labels
+    #print view using characters from getViewCharacter(x, y)
+
+    #print header (column labels)
+    s = " "
+    for x in range(board.width):
+        s = s + chr(x + 65)
+    print s
+    #print
+    for y in range(board.height):
+        s = str(y) #row labels (TODO: constant width using str.zfill)
+        for x in range(board.width):
+            s = s + getViewCharacter(board, x, y)
+        print s
+
+#the characters used to represent the states of the view array
+def getViewCharacter(board, x, y):
+    v = board.getView(x, y)
+    if v == VIEW_HIT:
+        return "x"
+    elif v == VIEW_MISS:
+        return "o"
+    else:
+        return "~"
 
 if __name__ == "__main__":
     # run console
@@ -143,10 +146,8 @@ if __name__ == "__main__":
         if safety > 10000: #10000 failures is a pretty reasonable number of attempts imo
             print "Failed to generate " + str(c) + " ships. Sorry :("
             break
-    #start the game i guess? print then start
-    board.printView()
-
-    #TODO:
-    #run the actual game (ofc)
-    #fix printing for larger boards
-    #(that can wait...)
+    #start the game
+    while board.getNumShips() > 0:
+        printView(board)
+        line = raw_input("Launch a missile! Coordinates: ")
+        #parse...
