@@ -1,6 +1,7 @@
 #TODO:
 #fix printing for larger boards
 #implement a % counter (how many times you hit / missed)
+#fix coord input for larger boards
 
 import random
 
