@@ -184,7 +184,7 @@ if __FILE__ == $0
 			safety += 1
 		end
 		if safety > 10000 #10000 failures is a pretty reasonable number of attempts imo
-			print "Failed to generate #{c} ships. Sorry :("
+			puts  "Failed to generate #{c} ships. Sorry :("
 			break
 		end
 	end
@@ -194,6 +194,7 @@ if __FILE__ == $0
 	puts "#{board.getNumShips()} hits left!"
 	puts "Note: when launching missiles, specify column then row. Ex: 'A 4' or 'b 7'"
 	moves = 0
+	hits = 0
 	while board.getNumShips() > 0 do
 
 		#print the board (for the next move)
@@ -217,6 +218,7 @@ if __FILE__ == $0
 				#act
 				if board.missile(column, row)
 					puts "It's a hit!"
+					hits += 1
 				else
 					puts "You missed!"
 				end
@@ -235,7 +237,10 @@ if __FILE__ == $0
 
 			puts
 			puts "You win!"
-			puts "It took you #{moves} moves."
+			print "It took you #{moves} move"
+			print "s" if moves != 1
+			puts "."
+			puts "Accuracy: #{(Float(hits)/moves*100).round}%"
 		end
 	#game loop
 	end
