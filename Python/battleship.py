@@ -126,7 +126,7 @@ def getViewCharacter(board, x, y):
 
 if __name__ == "__main__":
     # run console
-    print "Starting battleship"
+    print "Starting battleship (Python)"
     #custom board size
     w = raw_input("Enter width (or blank for default of " + str(DEFAULT_SIZE) + "): ")
     try:
