@@ -125,7 +125,7 @@ module Battleship
 	end
 
 	def getColumnIndex(letter)
-		letter.ord
+		letter.upcase.ord
 	end
 
 	def getRowLetter(index)
@@ -144,12 +144,91 @@ module Battleship
 		"~"
 	end
 
+	def cget(prompt = "")
+		print prompt
+		gets
+	end
+
 	#game processing
 
 	if __FILE__ == $0
+		#run console
+
 		puts "Starting battleship (Ruby)"
+
+		#get input for size of board
+
+		w = cget("Enter width (or blank for default of #{Default_width})): ").chomp.to_i
+		w = Default_width if w <= 0
+		puts "Width: #{w}"
+
+		h = cget("Enter height (or blank for default of #{w})): ").chomp.to_i
+		h = w if h <= 0
+		puts "Height: #{h}"
+
 		board = Board.new(10)
-		puts board
-	end #game loop and such
+
+		#custom ship count
+
+		c = cget("Enter number of ships (or blank for default of #{Default_width}): ").chomp.to_i
+		c = Default_width if c <= 0
+		puts "Number of ships: #{c}"
+
+		#add the ships
+
+		d = c
+		while d > 0 do
+			#TODO: it's 12:34 rn and i'm lazy
+		end
+
+		#start game
+
+		puts "#{board.getNumShips()} hits left!"
+		puts "Note: when launching missiles, specify column then row. Ex: 'A 4' or 'b 7'"
+		moves = 0
+		while board.getNumShips() > 0 do
+
+			#print the board (for the next move)
+
+			puts
+			printView(board)
+
+			#get input
+
+			while true do
+				line = cget("Launch a missile! Coordinates: ").chomp()
+				puts
+				begin
+					#parse
+					line = line.split(" ", 2)
+					column = getColumnIndex(line[0])
+					row = getRowIndex(line[1])
+					#act
+					if board.missile(column, row)
+						puts "It's a hit!"
+					else
+						puts "You missed!"
+					end
+					#results
+					moves += 1
+					if board.getNumShips() > 0
+						puts "#{board.getNumShips()} hits left!"
+					end
+					break
+				rescue
+					puts "Invalid coordinates specified"
+				end
+			end
+
+			if board.getNumShips() <= 0
+				#end game
+
+				puts
+				puts "You win!"
+				puts "It took you #{moves} moves."
+			end
+		end
+
+	end #game loop
 
 end #module
