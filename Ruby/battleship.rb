@@ -1,4 +1,5 @@
 module Battleship
+
 	Default_width = 10
 
 	Ship_none = 0
@@ -10,6 +11,8 @@ module Battleship
 	View_miss = 2
 
 	class Board
+
+		attr_accessor :width :height
 	
 		# Create the object
 		def initialize(*args)
@@ -60,6 +63,24 @@ module Battleship
 			#too lazy rn
 		end
 
+=begin
+
+    def addShips(self, x, dx, y, dy):
+        #when you have to iterate twice because you have to check first
+        for i in range(x, x + dx):
+            for j in range(y, y + dy):
+                if (not self.checkBounds(i, j)) or self.board_ships[i][j] == SHIP_ALIVE:
+                    return False
+        #ugh
+        for i in range(x, x + dx):
+            for j in range(y, y + dy):
+                self.addShip(i, j)
+        return True
+
+=end
+
+		end
+
 		def missile(x, y)
 			return false if not checkBounds(x, y)
 			return false if @board_view[x][y] == View_hit
@@ -78,25 +99,55 @@ module Battleship
 			"Board[#{@width}x#{@height}]"
 		end
 
-=begin
-
-    def addShips(self, x, dx, y, dy):
-        #when you have to iterate twice because you have to check first
-        for i in range(x, x + dx):
-            for j in range(y, y + dy):
-                if (not self.checkBounds(i, j)) or self.board_ships[i][j] == SHIP_ALIVE:
-                    return False
-        #ugh
-        for i in range(x, x + dx):
-            for j in range(y, y + dy):
-                self.addShip(i, j)
-        return True
-
-=end
-
 	end #Board class
 
+	#command line utility methods
+
+	def printView(board)
+		#column labels
+		print " "
+		(0..(board.width - 1).each do |x|
+			print getColumnLetter(x)
+		end
+		print "\n"
+		#board
+		(0..(board.height - 1).each do |y|
+			print getColumnLetter(y)
+			(0..(board.width - 1).each do |x|
+				print getViewCharacter(board, x, y)
+			end
+			print "\n"
+		end
+	end
+
+	def getColumnLetter(index)
+		chr(index)
+	end
+
+	def getColumnIndex(letter)
+		letter.ord
+	end
+
+	def getRowLetter(index)
+		index.to_s
+	end
+
+	def getRowIndex(letter)
+		letter.to_i
+	end
+
+	def getViewCharacter(board, x, y)
+		#the characters used to represent the states of the view array
+		v = board.getView(x, y)
+		return "x" if v == View_hit
+		return "o" if v == View_miss
+		"~"
+	end
+
+	#game processing
+
 	if __FILE__ == $0
+		puts "Starting battleship (Ruby)"
 		board = Board.new(10)
 		puts board
 	end #game loop and such
