@@ -93,7 +93,7 @@ def printView(board):
     print s
     #print
     for y in range(board.height):
-        s = str(y) #row labels (TODO: constant width using str.zfill)
+        s = getRowLetter(y) #row labels (TODO: constant width using str.zfill)
         for x in range(board.width):
             s = s + getViewCharacter(board, x, y)
         print s
@@ -109,7 +109,7 @@ def getColumnIndex(letter):
 ##        return int(letter) - 65
 
 def getRowLetter(index):
-    return str(letter)
+    return str(index)
 
 def getRowIndex(letter):
     return int(letter)
