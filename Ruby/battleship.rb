@@ -112,6 +112,7 @@ module Battleship
 		print "\n"
 		#board
 		(0..(board.height - 1).each do |y|
+			#row label
 			print getColumnLetter(y)
 			(0..(board.width - 1).each do |x|
 				print getViewCharacter(board, x, y)
@@ -179,6 +180,23 @@ module Battleship
 		d = c
 		while d > 0 do
 			#TODO: it's 12:34 rn and i'm lazy
+
+=begin
+    while d > 0:
+        x = random.randrange(w)
+        y = random.randrange(h)
+        axis = random.randrange(2)
+        dx = random.randrange(w/2) + 1 if axis == 1 else 1
+        dy = random.randrange(h/2) + 1 if axis == 0 else 1
+        if board.addShips(x, dx, y, dy):
+            d -= 1
+        else:
+            safety += 1
+        if safety > 10000: #10000 failures is a pretty reasonable number of attempts imo
+            print "Failed to generate " + str(c) + " ships. Sorry :("
+            break
+=end
+
 		end
 
 		#start game
@@ -227,8 +245,9 @@ module Battleship
 				puts "You win!"
 				puts "It took you #{moves} moves."
 			end
-		end
 
-	end #game loop
+		end #game loop
+
+	end #console
 
 end #module
