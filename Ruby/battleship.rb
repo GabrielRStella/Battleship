@@ -107,7 +107,7 @@ module Battleship
 		#board
 		(0..(board.height - 1)).each do |y|
 			#row label
-			print getColumnLetter(y)
+			print getRowLetter(y)
 			(0..(board.width - 1)).each do |x|
 				print getViewCharacter(board, x, y)
 			end
@@ -116,11 +116,11 @@ module Battleship
 	end
 
 	def Battleship.getColumnLetter(index)
-		chr(index)
+		(index + 65).chr
 	end
 
 	def Battleship.getColumnIndex(letter)
-		letter.upcase.ord
+		letter.upcase.ord - 65
 	end
 
 	def Battleship.getRowLetter(index)
@@ -160,7 +160,7 @@ if __FILE__ == $0
 	h = w if h <= 0
 	puts "Height: #{h}"
 
-	board = Battleship::Board.new(10)
+	board = Battleship::Board.new(w, h)
 
 	#custom ship count
 
@@ -208,6 +208,10 @@ if __FILE__ == $0
 			begin
 				#parse
 				line = line.split(" ", 2)
+				if line.length < 2
+					#need spaceee
+					raise "This message doesn't matter"
+				end
 				column = Battleship.getColumnIndex(line[0])
 				row = Battleship.getRowIndex(line[1])
 				#act
