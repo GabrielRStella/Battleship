@@ -44,7 +44,7 @@ module Battleship
 		end
 
 		def getNumShips()
-			ships.length
+			@ships.length
 		end
 
 		def addShip(x, y)
@@ -60,15 +60,15 @@ module Battleship
 
 		def addShips(x, dx, y, dy)
 			#check bounds
-			(x..(x + dx - 1).each do |i|
-				(y..(y + dx - 1).each do |j|
-					return false unless self.checkBounds(i, j)
+			(x..(x + dx - 1)).each do |i|
+				(y..(y + dx - 1)).each do |j|
+					return false unless checkBounds(i, j)
 					return false if @board_ships[i][j] == Ship_alive
 				end
 			end
 			#add
-			(x..(x + dx - 1).each do |i|
-				(y..(y + dx - 1).each do |j|
+			(x..(x + dx - 1)).each do |i|
+				(y..(y + dx - 1)).each do |j|
 					addShip(i, j)
 				end
 			end
@@ -97,41 +97,41 @@ module Battleship
 
 	#command line utility methods
 
-	def printView(board)
+	def Battleship.printView(board)
 		#column labels
 		print " "
-		(0..(board.width - 1).each do |x|
+		(0..(board.width - 1)).each do |x|
 			print getColumnLetter(x)
 		end
 		print "\n"
 		#board
-		(0..(board.height - 1).each do |y|
+		(0..(board.height - 1)).each do |y|
 			#row label
 			print getColumnLetter(y)
-			(0..(board.width - 1).each do |x|
+			(0..(board.width - 1)).each do |x|
 				print getViewCharacter(board, x, y)
 			end
 			print "\n"
 		end
 	end
 
-	def getColumnLetter(index)
+	def Battleship.getColumnLetter(index)
 		chr(index)
 	end
 
-	def getColumnIndex(letter)
+	def Battleship.getColumnIndex(letter)
 		letter.upcase.ord
 	end
 
-	def getRowLetter(index)
+	def Battleship.getRowLetter(index)
 		index.to_s
 	end
 
-	def getRowIndex(letter)
+	def Battleship.getRowIndex(letter)
 		letter.to_i
 	end
 
-	def getViewCharacter(board, x, y)
+	def Battleship.getViewCharacter(board, x, y)
 		#the characters used to represent the states of the view array
 		v = board.getView(x, y)
 		return "x" if v == View_hit
@@ -139,106 +139,101 @@ module Battleship
 		"~"
 	end
 
-	def cget(prompt = "")
+	def Battleship.cget(prompt = "")
 		print prompt
 		gets
 	end
+#module
+end
 
-	#game processing
+#game processing
+if __FILE__ == $0
+	#run console
+	puts "Starting battleship (Ruby)"
 
-	if __FILE__ == $0
-		#run console
+	#get input for size of board
+	w = Battleship.cget("Enter width (or blank for default of #{Battleship::Default_width})): ").chomp.to_i
+	w = Battleship::Default_width if w <= 0
+	puts "Width: #{w}"
 
-		puts "Starting battleship (Ruby)"
+	h = Battleship.cget("Enter height (or blank for default of #{w})): ").chomp.to_i
+	h = w if h <= 0
+	puts "Height: #{h}"
 
-		#get input for size of board
+	board = Battleship::Board.new(10)
 
-		w = cget("Enter width (or blank for default of #{Default_width})): ").chomp.to_i
-		w = Default_width if w <= 0
-		puts "Width: #{w}"
+	#custom ship count
 
-		h = cget("Enter height (or blank for default of #{w})): ").chomp.to_i
-		h = w if h <= 0
-		puts "Height: #{h}"
+	c = Battleship.cget("Enter number of ships (or blank for default of #{Battleship::Default_width}): ").chomp.to_i
+	c = Battleship::Default_width if c <= 0
+	puts "Number of ships: #{c}"
 
-		board = Board.new(10)
+	#add the ships
 
-		#custom ship count
+	d = c
+	safety = 0
+	while d > 0 do
+		x = rand(w)
+		y = rand(h)
+		axis = rand(2)
+		dx = axis == 1 ? rand(w/2) + 1 : 1
+		dy = axis == 0 ? rand(h/2) + 1 : 1
+		if board.addShips(x, dx, y, dy)
+			d -= 1
+		else
+			safety += 1
+		end
+		if safety > 10000 #10000 failures is a pretty reasonable number of attempts imo
+			print "Failed to generate #{c} ships. Sorry :("
+			break
+		end
+	end
 
-		c = cget("Enter number of ships (or blank for default of #{Default_width}): ").chomp.to_i
-		c = Default_width if c <= 0
-		puts "Number of ships: #{c}"
+	#start game
 
-		#add the ships
+	puts "#{board.getNumShips()} hits left!"
+	puts "Note: when launching missiles, specify column then row. Ex: 'A 4' or 'b 7'"
+	moves = 0
+	while board.getNumShips() > 0 do
 
-		d = c
-		safety = 0
-		while d > 0 do
-			x = rand(w)
-			y = rand(h)
-			axis = rand(2)
-			dx = axis == 1 ? rand(w/2) + 1 : 1
-			dy = axis == 0 ? rand(h/2) + 1 : 1
-			if board.addShips(x, dx, y, dy)
-				d -= 1
-			else
-				safety += 1
-			end
-			if safety > 10000 #10000 failures is a pretty reasonable number of attempts imo
-				print "Failed to generate #{c} ships. Sorry :("
+		#print the board (for the next move)
+		puts
+		Battleship.printView(board)
+
+		#get input
+
+		while true do
+			line = Battleship.cget("Launch a missile! Coordinates: ").chomp()
+			puts
+			begin
+				#parse
+				line = line.split(" ", 2)
+				column = Battleship.getColumnIndex(line[0])
+				row = Battleship.getRowIndex(line[1])
+				#act
+				if board.missile(column, row)
+					puts "It's a hit!"
+				else
+					puts "You missed!"
+				end
+				#results
+				moves += 1
+				if board.getNumShips() > 0
+					puts "#{board.getNumShips()} hits left!"
+				end
 				break
+			rescue
+				puts "Invalid coordinates specified"
 			end
 		end
-
-		#start game
-
-		puts "#{board.getNumShips()} hits left!"
-		puts "Note: when launching missiles, specify column then row. Ex: 'A 4' or 'b 7'"
-		moves = 0
-		while board.getNumShips() > 0 do
-
-			#print the board (for the next move)
+		if board.getNumShips() <= 0
+			#end game
 
 			puts
-			printView(board)
-
-			#get input
-
-			while true do
-				line = cget("Launch a missile! Coordinates: ").chomp()
-				puts
-				begin
-					#parse
-					line = line.split(" ", 2)
-					column = getColumnIndex(line[0])
-					row = getRowIndex(line[1])
-					#act
-					if board.missile(column, row)
-						puts "It's a hit!"
-					else
-						puts "You missed!"
-					end
-					#results
-					moves += 1
-					if board.getNumShips() > 0
-						puts "#{board.getNumShips()} hits left!"
-					end
-					break
-				rescue
-					puts "Invalid coordinates specified"
-				end
-			end
-
-			if board.getNumShips() <= 0
-				#end game
-
-				puts
-				puts "You win!"
-				puts "It took you #{moves} moves."
-			end
-		#game loop
+			puts "You win!"
+			puts "It took you #{moves} moves."
 		end
-	#console
+	#game loop
 	end
-#module
+#console
 end
