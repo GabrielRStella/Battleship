@@ -12,7 +12,7 @@ module Battleship
 
 	class Board
 
-		attr_accessor :width :height
+		attr_accessor :width, :height
 	
 		# Create the object
 		def initialize(*args)
@@ -92,8 +92,8 @@ module Battleship
 		def to_s
 			"Board[#{@width}x#{@height}]"
 		end
-
-	end #Board class
+	#board class
+	end
 
 	#command line utility methods
 
@@ -172,25 +172,22 @@ module Battleship
 		#add the ships
 
 		d = c
+		safety = 0
 		while d > 0 do
-			#TODO: it's 12:34 rn and i'm lazy
-
-=begin
-    while d > 0:
-        x = random.randrange(w)
-        y = random.randrange(h)
-        axis = random.randrange(2)
-        dx = random.randrange(w/2) + 1 if axis == 1 else 1
-        dy = random.randrange(h/2) + 1 if axis == 0 else 1
-        if board.addShips(x, dx, y, dy):
-            d -= 1
-        else:
-            safety += 1
-        if safety > 10000: #10000 failures is a pretty reasonable number of attempts imo
-            print "Failed to generate " + str(c) + " ships. Sorry :("
-            break
-=end
-
+			x = rand(w)
+			y = rand(h)
+			axis = rand(2)
+			dx = axis == 1 ? rand(w/2) + 1 : 1
+			dy = axis == 0 ? rand(h/2) + 1 : 1
+			if board.addShips(x, dx, y, dy)
+				d -= 1
+			else
+				safety += 1
+			end
+			if safety > 10000 #10000 failures is a pretty reasonable number of attempts imo
+				print "Failed to generate #{c} ships. Sorry :("
+				break
+			end
 		end
 
 		#start game
@@ -239,9 +236,9 @@ module Battleship
 				puts "You win!"
 				puts "It took you #{moves} moves."
 			end
-
-		end #game loop
-
-	end #console
-
-end #module
+		#game loop
+		end
+	#console
+	end
+#module
+end
