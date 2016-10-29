@@ -241,6 +241,8 @@ if __FILE__ == $0
 			print "s" if moves != 1
 			puts "."
 			puts "Accuracy: #{(Float(hits)/moves*100).round}%"
+			puts
+			Battleship.printView(board)
 		end
 	#game loop
 	end
