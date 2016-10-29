@@ -58,27 +58,21 @@ module Battleship
 			false
 		end
 
-		def addShips(x, y)
-			#TODO
-			#too lazy rn
-		end
-
-=begin
-
-    def addShips(self, x, dx, y, dy):
-        #when you have to iterate twice because you have to check first
-        for i in range(x, x + dx):
-            for j in range(y, y + dy):
-                if (not self.checkBounds(i, j)) or self.board_ships[i][j] == SHIP_ALIVE:
-                    return False
-        #ugh
-        for i in range(x, x + dx):
-            for j in range(y, y + dy):
-                self.addShip(i, j)
-        return True
-
-=end
-
+		def addShips(x, dx, y, dy)
+			#check bounds
+			(x..(x + dx - 1).each do |i|
+				(y..(y + dx - 1).each do |j|
+					return false unless self.checkBounds(i, j)
+					return false if @board_ships[i][j] == Ship_alive
+				end
+			end
+			#add
+			(x..(x + dx - 1).each do |i|
+				(y..(y + dx - 1).each do |j|
+					addShip(i, j)
+				end
+			end
+			true
 		end
 
 		def missile(x, y)
