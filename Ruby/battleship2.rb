@@ -6,6 +6,9 @@ module Battleship
 	Ship_alive = 1
 	Ship_dead = 2
 
+	View_hidden = 0
+	View_revealed = 1
+
 	View_water = 0
 	View_hit = 1
 	View_miss = 2
@@ -15,7 +18,6 @@ module Battleship
 	Missile_fail = 2 #something dumb happened, like you hit a sunken ship
 
 	class Point
-		include Comparable
 		attr_accessor :x, :y
 
 		def initialize(x = 0, y = 0)
@@ -23,46 +25,32 @@ module Battleship
 			@y = y
 		end
 
-		def <=>(other)
-			total = @x - other.x + @y - other.y
-			return total > 0 ? 1 : (total < 0 ? -1 : 0)
-		end
-
-	end
-
-	class Field
-
-		attr_accessor :width, :height
-	
-		def initialize(*args)
-			if args.length == 1
-				arg = args[0]
-					if arg.is_a? Point
-						@width = arg.x
-						@height = arg.y
-					else
-						@width = @height = arg
-					end
-			else
-				@width = args[0]
-				@height = args[1]
-			end
-		end
-
-		def containsPoint(p)
-			return contains(p.x, p.y)
-		end
-
-		def contains(x, y)
-			return false if (x < 0 || x >= @width)
-			return false if (y < 0 || y >= @height)
+		def equals(other)
+			return false unless @x == other.x
+			return false unless @y == other.y
 			true
 		end
+
+		#taxicab distance (which works on a tiled board)
+		#todo: make diagonals count for 1 instead of 2? idk
+
+		def dist(x, y)
+			(@x - x).abs + (@y - y).abs
+		end
+
+		def distPoint(other)
+			dist(other.x, other.y)
+		end
+
+		def distCoord(c)
+			dist(c[0], c[1])
+		end
+
 	end
 
 	class Ship
 
-		attr_accessor :width, :height, x, y
+		attr_reader :width, :height, x, y
 
 		def initialize(width, height, x = 0, y = 0)
 			@width = width
@@ -70,11 +58,27 @@ module Battleship
 			@x = x
 			@y = y
 			@states = Array.new(@width) { Array.new(@height) {Ship_alive} }
+			@life = width * height #number of hits left
+		end
+
+		def life()
+			@life
 		end
 
 		def setPosition(x, y)
 			@x = x
 			@y = y
+		end
+
+		def containsAnyPoint(p)
+			p.each do |pos|
+				return true if containsPoint(pos)
+			end
+			false
+		end
+
+		def containsPoint(p)
+			contains(p.x, p.y)
 		end
 
 		def containsAny(p)
@@ -92,46 +96,136 @@ module Battleship
 			true
 		end
 
+		def getState(x, y)
+			if(contains(x, y))
+				@states[x-@x][y-@x]
+			end
+			Ship_none
+
 		def hit(x, y)
 			if contains(x, y)
-				return Missile_hit if states[x-@x][y-@x] == Ship_alive
-				return Missile_fail
+				if @states[x-@x][y-@y] == Ship_alive
+					@states[x-@x][y-@y] = Ship_dead
+					@life -= 1
+					return Missile_hit
+				end
+				Missile_fail
 			end
-			return Missile_miss
+			Missile_miss
+		end
+
+		def getPointList()
+			points = Array.new(@width * @height)
+			c = 0
+			(@x..(@x + @width - 1)).each do |i|
+				(@y..(@y + @height - 1)).each do |j|
+					points[c] = Point.new(i, j)
+					c += 1
+				end
+			end
+			points
+		end
+
+		def getCoordList()
+			points = Array.new(@width * @height)
+			c = 0
+			(@x..(@x + @width - 1)).each do |i|
+				(@y..(@y + @height - 1)).each do |j|
+					points[c] = [i, j]
+					c += 1
+				end
+			end
+			points
+		end
+
+		def intersects(ship)
+			containsAny(ship.getCoordList())
+		end
+
+		def distPoint(point)
+			dist = -1
+			getCoordList().each do |coord|
+				d = point.distCoord(coord)
+				dist = d if (dist < 0 || d < dist)
+			end
+			dist
 		end
 
 	#ship class
 	end
 
-	#ship builders
+	#ship builder
 
 	def Battleship.makeShip(length, axis = -1, x = 0, y = 0)
 		dx = axis == 0 ? length : 1
 		dy = axis == 1 ? length : 1
-		return Battleship::Ship.new(dx, dy, x, y)
+		return Ship.new(dx, dy, x, y) #Battleship::Ship.new(dx, dy, x, y)
 	end
 
-	class Board
+	class Field
 
-		attr_accessor :width, :height
+		attr_reader :width, :height
 	
 		def initialize(*args)
 			if args.length == 1
-				@width = @height = args[0]
+				arg = args[0]
+					if arg.is_a? Point
+						@width = arg.x
+						@height = arg.y
+					else
+						@width = @height = arg
+					end
 			else
 				@width = args[0]
 				@height = args[1]
 			end
-			@board_ships = Array.new(@width) { Array.new(@height) }
-			@board_view = Array.new(@width) { Array.new(@height) }
-			@ships = Array.new
 		end
 
-		def checkBounds(x, y)
+		def containsPoint(p)
+			contains(p.x, p.y)
+		end
+
+		def containsCoord(c)
+			contains(c[0], c[1])
+		end
+
+		def contains(x, y)
 			return false if (x < 0 || x >= @width)
 			return false if (y < 0 || y >= @height)
 			true
 		end
+	end
+
+	class Board < Field
+	
+		def initialize(*args)
+			super(args)
+			#stores references to the ship at each coordinate
+			@board_ships = Array.new(@width) { Array.new(@height) }
+			#stores whether the board has been revealed at each coord
+			@board_view = Array.new(@width) { Array.new(@height) { View_hidden } }
+			#all dem ships
+			@ships = Array.new
+		end
+
+		def addShip(ship)
+			ship.getCoordList().each do |coord|
+				@board_ships[coord[0]][coord[1]] = ship
+			end
+			@ships.push(ship)
+		end
+
+		def hitsLeft()
+			sum = 0
+			@ships.each do |ship|
+				sum += ship.life
+			end
+			sum
+		end
+
+		###
+		#old junk
+		###
 
 		def getView(x, y)
 			return @board_view[x][y] if checkBounds(x, y)
